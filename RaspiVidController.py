@@ -35,6 +35,9 @@ class RaspiVidController(threading.Thread):
         self.running = True
         while(self.running and raspivid.poll() is None):
             time.sleep(TIMETOWAITFORABORT)
+        self.running = False
+
+        if raspivid.poll() == True: raspivid.kill()
 
     def stopController(self):
         self.running = False
