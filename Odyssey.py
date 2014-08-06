@@ -47,6 +47,13 @@ class Odyssey():
         if self.camera.recording == True:
             self.camera.stop_recording()
 
+    def stop(self):
+        self.stop_recording()
+        self.previewController.stopController()
+        self.camera.close()
+        if self.gpsController:
+            odyssey.gpsController.stopController()
+
 if __name__ == "__main__":
     try:
         import os
@@ -71,9 +78,5 @@ if __name__ == "__main__":
         print 'Unexpected error on recording: ', exc_info[0], exc_info[1]
 
     finally:
-        odyssey.stop_recording()
-        odyssey.previewController.stopController()
-        if odyssey.gpsController:
-            odyssey.gpsController.stopController()
-        odyssey.camera.close()
+        odyssey.stop()
         print 'Done.'
