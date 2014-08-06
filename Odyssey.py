@@ -24,6 +24,7 @@ class Odyssey():
         self.camera = picamera.PiCamera()
         self.previewController = PreviewController(self.camera,
                                                    self.gpsController)
+        self.previewController.start()
 
         # initialize pygame
         pygame.init()
@@ -31,7 +32,10 @@ class Odyssey():
         self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
 
     def show_preview(self):
-        self.previewController.start()
+        self.previewController.show()
+
+    def hide_preview(self):
+        self.previewController.hide()
 
     def start_recording(self):
         # should set inline_headers to deal w/ older firmware

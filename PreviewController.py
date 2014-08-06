@@ -13,6 +13,9 @@ class PreviewController(threading.Thread):
     def __init__(self, camera, gpsController):
         threading.Thread.__init__(self)
 
+        self.running    = False
+        self.is_showing = False
+
         camera.resolution = self.displaySizeMap[self.displaySize][1]
         camera.rotation   = 180
         camera.crop       = (0.0, 0.0, 1.0, 1.0)
@@ -25,12 +28,13 @@ class PreviewController(threading.Thread):
         pygame.mouse.set_visible(False)
         self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
 
-        self.running = False
-
     def run(self):
         # start running
         self.running = True
         while self.running:
+            if self.is_showing == False:
+                continue
+
             # to store image into in-memory stream
             stream = io.BytesIO()
             self.camera.capture(stream, use_video_port=True, format='raw')
@@ -78,6 +82,14 @@ class PreviewController(threading.Thread):
             # finally update display
             pygame.display.update()
 
+    def show(self):
+        self.is_showing = True
+
+    def hide(self):
+        self.screen.fill((0, 0, 0));
+        pygame.display.update()
+        self.is_showing = False
+
     def stopController(self):
         self.running = False
 
@@ -100,19 +112,24 @@ if __name__ == '__main__':
     import sys
     import os
 
-    os.putenv('SDL_VIDEODRIVER', 'fbcon')
-    os.putenv('SDL_FBDEV'      , '/dev/fb1')
-    os.putenv('SDL_MOUSEDRV'   , 'TSLIB')
+    os.putenv('SDL_VIDEODRIVER', 'fbcon'                 )
+    os.putenv('SDL_FBDEV'      , '/dev/fb1'              )
+    os.putenv('SDL_MOUSEDRV'   , 'TSLIB'                 )
     os.putenv('SDL_MOUSEDEV'   , '/dev/input/touchscreen')
 
     import picamera
     camera = picamera.PiCamera()
 
     controller = PreviewController(camera, None)
+    controller.start()
 
     try:
         print('Displaying...')
-        controller.start()
+        controller.show()
+        time.sleep(5)
+        controller.hide()
+        time.sleep(5)
+        controller.show()
         time.sleep(5)
 
     except KeyboardInterrupt:
