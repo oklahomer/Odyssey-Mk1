@@ -37,6 +37,12 @@ class Odyssey():
     def hide_preview(self):
         self.previewController.hide()
 
+    def switch_preview(self):
+        if self.previewController.is_showing == True:
+            self.hide_preview()
+        else:
+            self.show_preview()
+
     def start_recording(self):
         # should set inline_headers to deal w/ older firmware
         # https://github.com/waveform80/picamera/issues/33
@@ -52,7 +58,7 @@ class Odyssey():
         self.previewController.stopController()
         self.camera.close()
         if self.gpsController:
-            odyssey.gpsController.stopController()
+            self.gpsController.stopController()
 
 if __name__ == "__main__":
     try:
