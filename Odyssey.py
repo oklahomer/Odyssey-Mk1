@@ -7,12 +7,18 @@ import pygame
 import yuv2rgb
 import io
 import os
+import sys
 
 class Odyssey():
     def __init__(self):
         # initialize GPSController
-        self.gpsController = GPSController()
-        self.gpsController.start()
+        try:
+            self.gpsController = GPSController()
+            self.gpsController.start()
+        except:
+            exc_info = sys.exc_info()
+            print 'Unexpected error on recording: ', exc_info[0], exc_info[1]
+            self.gpsController = None
 
         # inititialize camera and display
         self.camera = picamera.PiCamera()
@@ -40,7 +46,6 @@ class Odyssey():
 if __name__ == "__main__":
     try:
         import os
-        import sys
         import time
 
         # basic configuration
@@ -64,6 +69,7 @@ if __name__ == "__main__":
     finally:
         odyssey.stop_recording()
         odyssey.previewController.stopController()
-        odyssey.gpsController.stopController()
+        if odyssey.gpsController:
+            odyssey.gpsController.stopController()
         odyssey.camera.close()
         print 'Done.'
