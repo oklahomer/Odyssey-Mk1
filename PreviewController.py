@@ -31,9 +31,6 @@ class PreviewController(threading.Thread):
         # start running
         self.running = True
         while self.running:
-            # finally update display
-            pygame.display.update()
-
             # to store image into in-memory stream
             stream = io.BytesIO()
             self.camera.capture(stream, use_video_port=True, format='raw')
