@@ -42,15 +42,6 @@ class PreviewController(threading.Thread):
             stream.readinto(yuv)
             stream.close()
 
-            # retlieve current location
-            if self.gpsController:
-                lat   = self.gpsController.fix.latitude
-                lon   = self.gpsController.fix.longitude
-                speed = self.gpsController.fix.speed
-                utc   = self.gpsController.utc
-            else:
-                lat = lon = speed = utc = None
-
             # convert raw YUV data to RGB
             yuv2rgb.convert(yuv,
                             rgb,
@@ -65,10 +56,13 @@ class PreviewController(threading.Thread):
                              ( (320 - img.get_width() ) / 2,
                                (240 - img.get_height()) / 2) )
 
-            # display recording status and static
+            # display recording status
             font = pygame.font.SysFont("freeserif", 18, bold = 1)
-            lines = ["Recording : %s" % ('ON' if self.camera.recording == True else 'OFF')]
-            if self.gpsController:
+            lines = ["Recording : %s" % ('ON' if self.camera.recording else 'OFF')]
+
+            # display speed if GPS receiver is active
+            speed = self.gpsController.fix.speed if self.gpsController else None
+            if speed:
                 lines.append("Speed : %s Km/h" % (speed * 60 * 60 / 1000))
             else:
                 lines.append("Speed : N/A")

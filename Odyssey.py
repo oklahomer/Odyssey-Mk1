@@ -6,7 +6,6 @@ import picamera
 import pygame
 import yuv2rgb
 import io
-import os
 import sys
 
 class Odyssey():
