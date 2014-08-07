@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import threading
 import pygame
-
+import time
 import yuv2rgb
 import io
 
@@ -80,9 +80,14 @@ class PreviewController(threading.Thread):
         self.is_showing = True
 
     def hide(self):
+        # tell run() NOT to refresh screen any more
+        # and wait till it actually stops
+        self.is_showing = False
+        time.sleep(0.3)
+
+        # then show black screen
         self.screen.fill((0, 0, 0));
         pygame.display.update()
-        self.is_showing = False
 
     def stopController(self):
         self.running = False
@@ -102,7 +107,6 @@ class PreviewController(threading.Thread):
                ]
 
 if __name__ == '__main__':
-    import time
     import sys
     import os
 
