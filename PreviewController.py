@@ -14,7 +14,7 @@ class PreviewController(threading.Thread):
         self.running    = False
         self.is_showing = False
 
-        camera.resolution = self.displaySizeMap[self.displaySize][1]
+        camera.resolution = (320, 240)
         camera.rotation   = 180
         camera.crop       = (0.0, 0.0, 1.0, 1.0)
         self.camera = camera
@@ -41,12 +41,8 @@ class PreviewController(threading.Thread):
             stream.close()
 
             # fix displaying image
-            img = pygame.image.frombuffer(rgb[0:(self.displaySizeMap[self.displaySize][1][0] * self.displaySizeMap[self.displaySize][1][1] * 3)],
-                                          self.displaySizeMap[self.displaySize][1],
-                                          'RGB')
-            self.screen.blit(img,
-                             ( (320 - img.get_width() ) / 2,
-                               (240 - img.get_height()) / 2) )
+            img = pygame.image.frombuffer(rgb[0:(320 * 240 * 3)], (320, 240), 'RGB')
+            self.screen.blit(img, (0, 0))
 
             # display recording status
             font = pygame.font.SysFont("freeserif", 18, bold = 1)
@@ -83,20 +79,6 @@ class PreviewController(threading.Thread):
 
     def stopController(self):
         self.running = False
-
-    @property
-    def displaySize(self):
-        # temporarily fixed to 0
-        return 0
-
-    @property
-    def displaySizeMap(self):
-        return [ # Camera parameters for different size settings
-                 # Full res     Viewfinder  Crop window
-                 [(2592, 1944), (320, 240), (0.0   , 0.0   , 1.0   , 1.0   )], # Large
-                 [(1920, 1080), (320, 180), (0.1296, 0.2222, 0.7408, 0.5556)], # Med
-                 [(1440, 1080), (320, 240), (0.2222, 0.2222, 0.5556, 0.5556)]  # Small
-               ]
 
 if __name__ == '__main__':
     import sys
