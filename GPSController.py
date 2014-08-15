@@ -47,6 +47,7 @@ if __name__ == '__main__':
             print(dataString)
 
             time.sleep(3)
+
     except KeyboardInterrupt:
         print 'Cancelled'
 

@@ -32,7 +32,7 @@ class PreviewController(threading.Thread):
         # start running
         self.running = True
         while self.running:
-            if self.is_showing == False:
+            if not self.is_showing:
                 continue
 
             # to store image into in-memory stream
