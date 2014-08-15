@@ -11,13 +11,19 @@ class Odyssey():
         try:
             self.gpsController = GPSController()
             self.gpsController.start()
+
         except:
             exc_info = sys.exc_info()
             print 'Unexpected error on recording: ', exc_info[0], exc_info[1]
             self.gpsController = None
 
-        # inititialize camera and display
-        self.camera = picamera.PiCamera()
+        # inititialize camera
+        camera = picamera.PiCamera()
+        camera.resolution = (1024, 768)
+        camera.rotation   = 180
+        camera.crop       = (0.0, 0.0, 1.0, 1.0)
+
+        self.camera = camera
         self.previewController = PreviewController(self.camera,
                                                    self.gpsController)
         self.previewController.start()
@@ -38,7 +44,7 @@ class Odyssey():
         # should set inline_headers to deal w/ older firmware
         # https://github.com/waveform80/picamera/issues/33
         if not self.camera.recording:
-            self.camera.start_recording('vid.h264', inline_headers=False)
+            self.camera.start_recording('vid.h264', format='h264', inline_headers=False)
 
     def stop_recording(self):
         if self.camera.recording:

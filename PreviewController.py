@@ -5,8 +5,6 @@ import pygame
 import time
 import io
 
-rgb = bytearray(320 * 240 * 3)
-
 class PreviewController(threading.Thread):
     def __init__(self, camera, gpsController):
         threading.Thread.__init__(self)
@@ -14,9 +12,6 @@ class PreviewController(threading.Thread):
         self.running    = False
         self.is_showing = False
 
-        camera.resolution = (320, 240)
-        camera.rotation   = 180
-        camera.crop       = (0.0, 0.0, 1.0, 1.0)
         self.camera = camera
 
         self.gpsController = gpsController
@@ -25,6 +20,10 @@ class PreviewController(threading.Thread):
         pygame.init()
         pygame.mouse.set_visible(False)
         self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+
+        self.rgb = bytearray(
+            self.camera.resolution[0] * self.camera.resolution[1] * 3
+            )
 
     def run(self):
         # start running
@@ -35,13 +34,17 @@ class PreviewController(threading.Thread):
 
             # to store image into in-memory stream
             stream = io.BytesIO()
-            self.camera.capture(stream, use_video_port=True, format='rgb')
+            self.camera.capture(
+                stream, use_video_port=True, format='rgb', resize=(320, 240)
+                )
             stream.seek(0)
-            stream.readinto(rgb)
+            stream.readinto(self.rgb)
             stream.close()
 
             # fix displaying image
-            img = pygame.image.frombuffer(rgb[0:(320 * 240 * 3)], (320, 240), 'RGB')
+            img = pygame.image.frombuffer(
+                self.rgb[0:(320 * 240 * 3)], (320, 240), 'RGB'
+                )
             self.screen.blit(img, (0, 0))
 
             # display recording status
@@ -91,6 +94,9 @@ if __name__ == '__main__':
 
     import picamera
     camera = picamera.PiCamera()
+    camera.resolution = (1024, 768)
+    camera.rotation   = 180
+    camera.crop       = (0.0, 0.0, 1.0, 1.0)
 
     controller = PreviewController(camera, None)
     controller.start()
