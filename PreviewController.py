@@ -37,7 +37,7 @@ class PreviewController(threading.Thread):
 
             # to store image into in-memory stream
             stream = io.BytesIO()
-            self.camera.capture(stream, use_video_port=True, format='raw')
+            self.camera.capture(stream, use_video_port=True, format='yuv')
             stream.seek(0)
             stream.readinto(yuv)
             stream.close()
