@@ -3,9 +3,6 @@
 from GPSController import GPSController
 from PreviewController import PreviewController
 import picamera
-import pygame
-import yuv2rgb
-import io
 import sys
 
 class Odyssey():
@@ -24,11 +21,6 @@ class Odyssey():
         self.previewController = PreviewController(self.camera,
                                                    self.gpsController)
         self.previewController.start()
-
-        # initialize pygame
-        pygame.init()
-        pygame.mouse.set_visible(False)
-        self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
 
     def show_preview(self):
         self.previewController.show()

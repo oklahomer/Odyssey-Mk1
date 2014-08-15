@@ -1,7 +1,5 @@
 import gps
 import threading
-import time
-import sys
 
 class GPSController(threading.Thread):
     def __init__(self):
@@ -30,6 +28,9 @@ class GPSController(threading.Thread):
         return self.gpsd.utc
 
 if __name__ == '__main__':
+    import time
+    import sys
+
     gpsController = GPSController()
 
     try:
