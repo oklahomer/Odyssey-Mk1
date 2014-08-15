@@ -23,7 +23,7 @@ GPIO.add_event_detect(23, GPIO.RISING, callback=switch_preview, bouncetime=1000)
 
 try:
     while True:
-        1
+        pass
         # TODO do something with camera
 
 except KeyboardInterrupt:
