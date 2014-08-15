@@ -16,15 +16,25 @@ odyssey = Odyssey()
 def switch_preview(channel):
     odyssey.switch_preview()
 
+def switch_record(channel):
+    odyssey.switch_record()
+
 # GPIO settings
 GPIO.setmode(GPIO.BCM)
+
+# On/Off preview display
+# leftmost tactile switch
 GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.add_event_detect(23, GPIO.RISING, callback=switch_preview, bouncetime=1000)
+
+# Start/Stop video recording
+# second from left
+GPIO.setup(22, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.add_event_detect(22, GPIO.RISING, callback=switch_record, bouncetime=1000)
 
 try:
     while True:
         pass
-        # TODO do something with camera
 
 except KeyboardInterrupt:
     print 'Abort...'

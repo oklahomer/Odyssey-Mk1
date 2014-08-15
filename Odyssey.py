@@ -52,6 +52,12 @@ class Odyssey():
         if self.camera.recording:
             self.camera.stop_recording()
 
+    def switch_record(self):
+        if self.camera.recording:
+            self.stop_recording()
+        else:
+            self.start_recording()
+
     def stop(self):
         self.stop_recording()
         self.previewController.stopController()
