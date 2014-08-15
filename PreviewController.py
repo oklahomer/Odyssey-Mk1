@@ -3,10 +3,8 @@
 import threading
 import pygame
 import time
-import yuv2rgb
 import io
 
-yuv = bytearray(320 * 240 * 3 / 2)
 rgb = bytearray(320 * 240 * 3)
 
 class PreviewController(threading.Thread):
@@ -37,16 +35,10 @@ class PreviewController(threading.Thread):
 
             # to store image into in-memory stream
             stream = io.BytesIO()
-            self.camera.capture(stream, use_video_port=True, format='yuv')
+            self.camera.capture(stream, use_video_port=True, format='rgb')
             stream.seek(0)
-            stream.readinto(yuv)
+            stream.readinto(rgb)
             stream.close()
-
-            # convert raw YUV data to RGB
-            yuv2rgb.convert(yuv,
-                            rgb,
-                            self.displaySizeMap[self.displaySize][1][0],
-                            self.displaySizeMap[self.displaySize][1][1])
 
             # fix displaying image
             img = pygame.image.frombuffer(rgb[0:(self.displaySizeMap[self.displaySize][1][0] * self.displaySizeMap[self.displaySize][1][1] * 3)],
