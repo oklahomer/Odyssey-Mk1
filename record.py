@@ -12,6 +12,7 @@ os.putenv('SDL_MOUSEDRV'   , 'TSLIB'                 )
 os.putenv('SDL_MOUSEDEV'   , '/dev/input/touchscreen')
 
 odyssey = Odyssey()
+odyssey.show_preview()
 
 def switch_preview(channel):
     odyssey.switch_preview()
