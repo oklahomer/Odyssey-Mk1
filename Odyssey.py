@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from GPSController import GPSController
 from PreviewController import PreviewController
+import time
 import picamera
 import sys
 
@@ -28,6 +29,15 @@ class Odyssey():
                                                    self.gpsController)
         self.previewController.start()
 
+    def datetime(self, format='%Y-%m-%dT%H:%M:%S'):
+        if self.gpsController and self.gpsController.utc:
+            timeObj = time.strptime(self.gpsController.utc,
+                                    '%Y-%m-%dT%H:%M:%S.%fz')
+            return time.strftime(format, timeObj)
+
+        else:
+            return time.strftime(format, time.gmtime())
+
     def show_preview(self):
         self.previewController.show()
 
@@ -44,7 +54,8 @@ class Odyssey():
         # should set inline_headers to deal w/ older firmware
         # https://github.com/waveform80/picamera/issues/33
         if not self.camera.recording:
-            self.camera.start_recording('vid.h264', format='h264', inline_headers=False)
+            fileName = self.datetime('%Y%m%d_%H%M%S') + '.h264'
+            self.camera.start_recording(fileName, format='h264', inline_headers=False)
 
     def stop_recording(self):
         if self.camera.recording:
@@ -66,7 +77,6 @@ class Odyssey():
 if __name__ == "__main__":
     try:
         import os
-        import time
 
         # basic configuration
         os.putenv('SDL_VIDEODRIVER', 'fbcon'                 )

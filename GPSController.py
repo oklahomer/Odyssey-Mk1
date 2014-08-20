@@ -25,6 +25,8 @@ class GPSController(threading.Thread):
 
     @property
     def utc(self):
+        # self.gpsd.fix.time can be either float or an ISO8601 string
+        # Use self.gpsd.utc, instead.
         return self.gpsd.utc
 
 if __name__ == '__main__':
