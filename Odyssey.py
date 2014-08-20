@@ -62,10 +62,19 @@ class Odyssey():
             self.camera.stop_recording()
 
     def switch_record(self):
-        if self.camera.recording:
+        if self.camera.recording and self.gpsController.is_logging:
             self.stop_recording()
+            self.gpsController.stop_logging()
+
+        elif self.camera.recording:
+            self.stop_recording()
+
+        elif self.gpsController.is_logging:
+            self.gpsController.stop_logging()
+
         else:
             self.start_recording()
+            self.gpsController.start_logging(self.datetime('%Y%m%d_%H%M%S') + '.csv')
 
     def stop(self):
         self.stop_recording()
