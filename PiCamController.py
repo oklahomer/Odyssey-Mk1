@@ -36,43 +36,43 @@ class PiCamController(threading.Thread):
         # start running
         self.running = True
         while self.running:
-            if not self.is_previewing:
-                continue
+            if self.is_previewing: self.refresh_preview()
 
-            # to store image into in-memory stream
-            stream = io.BytesIO()
-            self.camera.capture(
-                stream, use_video_port=True, format='rgb', resize=(320, 240)
-                )
-            stream.seek(0)
-            stream.readinto(self.rgb)
-            stream.close()
+    def refresh_preview(self):
+        # to store image into in-memory stream
+        stream = io.BytesIO()
+        self.camera.capture(
+            stream, use_video_port=True, format='rgb', resize=(320, 240)
+            )
+        stream.seek(0)
+        stream.readinto(self.rgb)
+        stream.close()
 
-            # fix displaying image
-            img = pygame.image.frombuffer(
-                self.rgb[0:(320 * 240 * 3)], (320, 240), 'RGB'
-                )
-            self.screen.blit(img, (0, 0))
+        # fix displaying image
+        img = pygame.image.frombuffer(
+            self.rgb[0:(320 * 240 * 3)], (320, 240), 'RGB'
+            )
+        self.screen.blit(img, (0, 0))
 
-            # display recording status
-            font = pygame.font.SysFont("freeserif", 18, bold = 1)
-            lines = ["Recording : %s" % ('ON' if self.camera.recording else 'OFF')]
+        # display recording status
+        font = pygame.font.SysFont("freeserif", 18, bold = 1)
+        lines = ["Recording : %s" % ('ON' if self.camera.recording else 'OFF')]
 
-            # display speed if GPS receiver is active
-            speed = self.gpsController.fix.speed if self.gpsController else None
-            if speed:
-                lines.append("Speed : %s Km/h" % (speed * 60 * 60 / 1000))
-            else:
-                lines.append("Speed : N/A")
+        # display speed if GPS receiver is active
+        speed = self.gpsController.fix.speed if self.gpsController else None
+        if speed:
+            lines.append("Speed : %s Km/h" % (speed * 60 * 60 / 1000))
+        else:
+            lines.append("Speed : N/A")
 
-            marginX = 10
-            for line in lines:
-                textSurface = font.render(line, 1, pygame.Color(255, 255, 255))
-                self.screen.blit(textSurface, (10, marginX))
-                marginX += (font.get_linesize() + 5)
+        marginX = 10
+        for line in lines:
+            textSurface = font.render(line, 1, pygame.Color(255, 255, 255))
+            self.screen.blit(textSurface, (10, marginX))
+            marginX += (font.get_linesize() + 5)
 
-            # finally update display
-            pygame.display.update()
+        # finally update display
+        pygame.display.update()
 
     def show_preview(self):
         self.is_previewing = True
