@@ -4,15 +4,18 @@ import threading
 import pygame
 import time
 import io
+import picamera
 
-class PreviewController(threading.Thread):
-    def __init__(self, camera, gpsController):
+class PiCamController(threading.Thread):
+    def __init__(self, gpsController=None):
         threading.Thread.__init__(self)
 
-        self.running    = False
-        self.is_showing = False
-
-        self.camera = camera
+        # initialize camera
+        camera = picamera.PiCamera()
+        camera.resolution = (1024, 768)
+        camera.rotation   = 180
+        camera.crop       = (0.0, 0.0, 1.0, 1.0)
+        self.camera       = camera
 
         self.gpsController = gpsController
 
@@ -22,14 +25,18 @@ class PreviewController(threading.Thread):
         self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
 
         self.rgb = bytearray(
-            self.camera.resolution[0] * self.camera.resolution[1] * 3
+            camera.resolution[0] * camera.resolution[1] * 3
             )
+
+        # set current statement
+        self.running       = False
+        self.is_previewing = False
 
     def run(self):
         # start running
         self.running = True
         while self.running:
-            if not self.is_showing:
+            if not self.is_previewing:
                 continue
 
             # to store image into in-memory stream
@@ -67,21 +74,37 @@ class PreviewController(threading.Thread):
             # finally update display
             pygame.display.update()
 
-    def show(self):
-        self.is_showing = True
+    def show_preview(self):
+        self.is_previewing = True
 
-    def hide(self):
+    def hide_preview(self):
         # tell run() NOT to refresh screen any more
         # and wait till it actually stops
-        self.is_showing = False
+        self.is_previewing = False
         time.sleep(0.3)
 
         # then show black screen
         self.screen.fill((0, 0, 0));
         pygame.display.update()
 
+    def start_recording(self, fileName='vid.h264'):
+        if not self.camera.recording:
+            # should set inline_headers to deal w/ older firmware
+            # https://github.com/waveform80/picamera/issues/33
+            self.camera.start_recording(fileName, format='h264', inline_headers=False)
+
+    def stop_recording(self):
+        if self.camera.recording:
+            self.camera.stop_recording()
+
     def stopController(self):
         self.running = False
+        self.stop_recording()
+        self.camera.close()
+
+    @property
+    def recording(self):
+        return self.camera.recording
 
 if __name__ == '__main__':
     import sys
@@ -92,22 +115,16 @@ if __name__ == '__main__':
     os.putenv('SDL_MOUSEDRV'   , 'TSLIB'                 )
     os.putenv('SDL_MOUSEDEV'   , '/dev/input/touchscreen')
 
-    import picamera
-    camera = picamera.PiCamera()
-    camera.resolution = (1024, 768)
-    camera.rotation   = 180
-    camera.crop       = (0.0, 0.0, 1.0, 1.0)
-
-    controller = PreviewController(camera, None)
-    controller.start()
-
     try:
+        controller = PiCamController()
+        controller.start()
+
         print('Displaying...')
-        controller.show()
+        controller.show_preview()
         time.sleep(5)
-        controller.hide()
+        controller.hide_preview()
         time.sleep(5)
-        controller.show()
+        controller.show_preview()
         time.sleep(5)
 
     except KeyboardInterrupt:

@@ -30,10 +30,9 @@ class GPSController(threading.Thread):
                 lat   = self.fix.latitude
                 lon   = self.fix.longitude
                 speed = self.fix.speed
-                utf   = self.utc
-                dataString = self.utc   + ',' + str(lat) + ',' + str(lon)  + ',' + str(speed) + '\n'
+                dataString = ','.join([self.utc, str(lat), str(lon), str(speed)])
 
-                self.file.write(dataString)
+                self.file.write(dataString + '\n')
                 self.lastLoggedTime = currentTime
 
     def stopController(self):
@@ -76,7 +75,7 @@ if __name__ == '__main__':
             speed = gpsController.fix.speed
             utc   = gpsController.utc
 
-            dataString = str(utc) + ',' + str(lat) + ',' + str(lon) + ',' + str(speed)
+            dataString = ','.join([utc, str(lat), str(lon), str(speed)])
             print(dataString)
 
             time.sleep(3)

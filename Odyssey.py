@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from GPSController import GPSController
-from PreviewController import PreviewController
+from PiCamController import PiCamController
 import time
-import picamera
 import sys
 
 class Odyssey():
     def __init__(self):
         # initialize GPSController
         try:
+            # it fails when gpsd is not working
             self.gpsController = GPSController()
             self.gpsController.start()
 
@@ -18,16 +18,8 @@ class Odyssey():
             print 'Unexpected error on recording: ', exc_info[0], exc_info[1]
             self.gpsController = None
 
-        # inititialize camera
-        camera = picamera.PiCamera()
-        camera.resolution = (1024, 768)
-        camera.rotation   = 180
-        camera.crop       = (0.0, 0.0, 1.0, 1.0)
-
-        self.camera = camera
-        self.previewController = PreviewController(self.camera,
-                                                   self.gpsController)
-        self.previewController.start()
+        self.cameraController = PiCamController(self.gpsController)
+        self.cameraController.start()
 
     def datetime(self, format='%Y-%m-%dT%H:%M:%S'):
         if self.gpsController and self.gpsController.utc:
@@ -38,48 +30,35 @@ class Odyssey():
         else:
             return time.strftime(format, time.gmtime())
 
-    def show_preview(self):
-        self.previewController.show()
-
-    def hide_preview(self):
-        self.previewController.hide()
-
     def switch_preview(self):
-        if self.previewController.is_showing:
-            self.hide_preview()
+        if self.cameraController.is_previewing:
+            self.cameraController.hide_preview()
         else:
-            self.show_preview()
-
-    def start_recording(self):
-        # should set inline_headers to deal w/ older firmware
-        # https://github.com/waveform80/picamera/issues/33
-        if not self.camera.recording:
-            fileName = self.datetime('%Y%m%d_%H%M%S') + '.h264'
-            self.camera.start_recording(fileName, format='h264', inline_headers=False)
-
-    def stop_recording(self):
-        if self.camera.recording:
-            self.camera.stop_recording()
+            self.cameraController.show_preview()
 
     def switch_record(self):
-        if self.camera.recording and self.gpsController.is_logging:
-            self.stop_recording()
+        if (
+                self.gpsController
+            and self.gpsController.is_logging
+            and self.cameraController.recording
+        ):
+            self.cameraController.stop_recording()
             self.gpsController.stop_logging()
 
-        elif self.camera.recording:
-            self.stop_recording()
+        elif self.cameraController.recording:
+            self.cameraController.stop_recording()
 
-        elif self.gpsController.is_logging:
+        elif self.gpsController and self.gpsController.is_logging:
             self.gpsController.stop_logging()
 
         else:
-            self.start_recording()
-            self.gpsController.start_logging(self.datetime('%Y%m%d_%H%M%S') + '.csv')
+            dt = self.datetime('%Y%m%d_%H%M%S')
+            self.cameraController.start_recording(dt + '.h264')
+            if self.gpsController:
+                self.gpsController.start_logging(dt + '.csv')
 
     def stop(self):
-        self.stop_recording()
-        self.previewController.stopController()
-        self.camera.close()
+        self.cameraController.stopController()
         if self.gpsController:
             self.gpsController.stopController()
 
@@ -94,8 +73,8 @@ if __name__ == "__main__":
         os.putenv('SDL_MOUSEDEV'   , '/dev/input/touchscreen')
 
         odyssey = Odyssey()
-        odyssey.show_preview()
-        odyssey.start_recording()
+        odyssey.cameraController.show_preview()
+        odyssey.cameraController.start_recording()
         time.sleep(10)
 
     except KeyboardInterrupt:
