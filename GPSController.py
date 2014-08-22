@@ -8,7 +8,7 @@ class GPSController(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
 
-        gpsdPort = os.getenv('GPSD_PORT', 2947)
+        gpsdPort = int(os.getenv('GPSD_PORT', 2947))
 
         subprocess.call('pkill gpsd', shell=True)
         subprocess.call(

@@ -1,3 +1,5 @@
 #!/bin/sh
 
-sudo python record.py
+export GPSD_PORT=2947
+
+sudo -E python record.py
