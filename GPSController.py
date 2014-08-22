@@ -1,14 +1,25 @@
 import gps
 import threading
 import time
+import subprocess
+import os
 
 class GPSController(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
-        self.gpsd = gps.gps("localhost", "2947")
+
+        gpsdPort = os.getenv('GPSD_PORT', 2947)
+
+        subprocess.call('pkill gpsd', shell=True)
+        subprocess.call(
+            'gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock -S %d' % gpsdPort,
+            shell=True)
+
+        self.gpsd = gps.gps("localhost", gpsdPort)
         self.gpsd.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
 
         self.file = None
+        self.fileName = None
 
         # set current statement
         self.running        = False
@@ -18,36 +29,39 @@ class GPSController(threading.Thread):
     def run(self):
         # start running
         self.running = True
+
         while self.running:
             self.gpsd.next()
 
-            if self.is_logging and self.file:
+            if self.is_logging:
                 currentTime = time.time()
-                if self.lastLoggedTime:
-                    if currentTime - self.lastLoggedTime < 5:
-                        continue
 
-                lat   = self.fix.latitude
-                lon   = self.fix.longitude
-                speed = self.fix.speed
-                dataString = ','.join([self.utc, str(lat), str(lon), str(speed)])
+                if (not self.lastLoggedTime
+                    or currentTime - self.lastLoggedTime >= 5):
 
-                self.file.write(dataString + '\n')
-                self.lastLoggedTime = currentTime
+                    self.writeLog()
+                    self.lastLoggedTime = currentTime
+
+    def writeLog(self):
+        dataString = ','.join([self.utc,
+                               str(self.fix.latitude),
+                               str(self.fix.longitude),
+                               str(self.fix.speed)]
+                               )
+
+        file = open(self.fileName, 'a')
+        file.write(dataString + '\n')
+        file.close()
 
     def stopController(self):
         self.running = False
-        if self.file:
-            self.file.close()
 
     def start_logging(self, fileName='gps_log.csv'):
-        self.file       = open(fileName, 'w')
+        self.fileName   = fileName
         self.is_logging = True
 
     def stop_logging(self):
         self.is_logging = False
-        if self.file:
-            self.file.close()
 
     @property
     def fix(self):
