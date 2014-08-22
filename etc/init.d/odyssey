@@ -1,0 +1,31 @@
+#! /bin/sh
+# copy or make a symbolic link of this file to /etc/init.d/odyssey
+# and execute `sudo update-rc.d odyssey defaults`
+
+### BEGIN INIT INFO
+# Provides:          odyssey
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Example initscript
+# Description:       This service is used to manage odyssey. It needs to be placeed in /etc/init.d.
+### END INIT INFO
+
+case "$1" in
+    start)
+        echo "Starting odyssey. Bon voyage!"
+        /home/pi/Odyssey-Mk1/odyssey-starter.sh
+        ;;
+    stop)
+        echo "Stopping odyssey."
+        killall odyssey
+        ;;
+    *)
+        echo "Usage: /etc/init.d/odyssey start|stop"
+        exit 1
+        ;;
+
+esac
+
+exit 0

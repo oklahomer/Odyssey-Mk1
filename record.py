@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# Maps each tactile button and corresponding function here
+# so other modules don't have to deal with GPIO.
+
 import sys
 import os
 import RPi.GPIO as GPIO
 from Odyssey import Odyssey
-
-# basic settings
-os.putenv('SDL_VIDEODRIVER', 'fbcon'                 )
-os.putenv('SDL_FBDEV'      , '/dev/fb1'              )
-os.putenv('SDL_MOUSEDRV'   , 'TSLIB'                 )
-os.putenv('SDL_MOUSEDEV'   , '/dev/input/touchscreen')
 
 odyssey = Odyssey()
 odyssey.cameraController.show_preview()

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from GPSController import GPSController
 from PiCamController import PiCamController
+import os
 import time
 import sys
 
@@ -53,9 +54,10 @@ class Odyssey():
 
         else:
             dt = self.datetime('%Y%m%d_%H%M%S')
-            self.cameraController.start_recording(dt + '.h264')
+            dirName = os.path.dirname( os.path.abspath( __file__ ) )
+            self.cameraController.start_recording(dirName + '/' + dt + '.h264')
             if self.gpsController:
-                self.gpsController.start_logging(dt + '.csv')
+                self.gpsController.start_logging(dirName + '/' + dt + '.csv')
 
     def stop(self):
         self.cameraController.stopController()
@@ -64,8 +66,6 @@ class Odyssey():
 
 if __name__ == "__main__":
     try:
-        import os
-
         # basic configuration
         os.putenv('SDL_VIDEODRIVER', 'fbcon'                 )
         os.putenv('SDL_FBDEV'      , '/dev/fb1'              )
