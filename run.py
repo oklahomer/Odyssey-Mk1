@@ -6,11 +6,12 @@
 import sys
 import os
 import RPi.GPIO as GPIO
+import getopt
 from Odyssey import Odyssey
 from daemon import daemon
 from daemon.pidlockfile import PIDLockFile
 
-def run():
+def main():
 
     os.putenv('SDL_VIDEODRIVER', 'fbcon'                 )
     os.putenv('SDL_FBDEV'      , '/dev/fb1'              )
@@ -56,5 +57,27 @@ def run():
         GPIO.cleanup()
         print 'Done'
 
-with daemon.DaemonContext(pidfile=PIDLockFile('/var/run/odyssey.pid')):
-    run()
+def usage():
+    print 'sudo python run.py -d'
+
+if __name__ == "__main__":
+    debug = False
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hg:d", ["help", "debug"])
+    except getopt.GetoptError:
+        usage()
+        sys.exit(2)
+
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage()
+            sys.exit()
+        elif opt in ('-d', '--debug'):
+            debug = True
+
+    if debug:
+        main()
+    else:
+        with daemon.DaemonContext(pidfile=PIDLockFile('/var/run/odyssey.pid')):
+            main()
