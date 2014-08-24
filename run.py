@@ -7,6 +7,7 @@ import sys
 import os
 import RPi.GPIO as GPIO
 import getopt
+import signal
 from Odyssey import Odyssey
 from daemon import daemon
 from daemon.pidlockfile import PIDLockFile
@@ -41,6 +42,14 @@ def main():
     # second from left
     GPIO.setup(22, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.add_event_detect(22, GPIO.RISING, callback=switch_record, bouncetime=1000)
+
+    def sighandler(signum = None, frame = None):
+        odyssey.stop()
+        GPIO.cleanup()
+        sys.exit(0)
+
+    for sig in [signal.SIGTERM, signal.SIGHUP, signal.SIGQUIT]:
+        signal.signal(sig, sighandler)
 
     try:
         while True:
