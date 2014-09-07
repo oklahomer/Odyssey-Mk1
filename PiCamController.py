@@ -41,9 +41,9 @@ class PiCamController(threading.Thread):
         text_array.append('Speed : %s' % speed)
 
         # prepare image to be overlayed
-        img = Image.new('RGBA', self.camera.resolution)
+        img = Image.new('RGB', self.camera.resolution)
         draw = ImageDraw.Draw(img)
-        draw.font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSerif.ttf", 50)
+        draw.font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSerif.ttf", 75)
 
         top_margin = 5
         for text in text_array:
