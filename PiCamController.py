@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import threading
 import picamera
+import time
 from PIL import Image, ImageDraw, ImageFont
 
 class PiCamController(threading.Thread):
@@ -54,15 +55,24 @@ class PiCamController(threading.Thread):
             self.status_overlay = self.camera.add_overlay(
                 img.tostring(), layer=5, size=img.size, alpha=128)
         else:
-            self.status_overlay.update(img.tostring())
+            try:
+                self.status_overlay.update(img.tostring())
+            except:
+                pass
 
     def show_preview(self):
         self.camera.start_preview()
 
     def hide_preview(self):
         self.camera.stop_preview()
+
+        # wait till all process in refresh_status_overlay() is through
+        # before removing overlay
+        time.sleep(0.2)
+
         if self.status_overlay:
             self.camera.remove_overlay(self.status_overlay)
+            self.status_overlay = None
 
     def start_recording(self, fileName='vid.h264'):
         if not self.camera.recording:
@@ -85,7 +95,6 @@ class PiCamController(threading.Thread):
 
 if __name__ == '__main__':
     import sys
-    import time
 
     try:
         controller = PiCamController()
