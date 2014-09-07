@@ -32,7 +32,7 @@ class Odyssey():
             return time.strftime(format, time.gmtime())
 
     def switch_preview(self):
-        if self.cameraController.is_previewing:
+        if self.cameraController.camera.previewing:
             self.cameraController.hide_preview()
         else:
             self.cameraController.show_preview()
@@ -66,12 +66,6 @@ class Odyssey():
 
 if __name__ == "__main__":
     try:
-        # basic configuration
-        os.putenv('SDL_VIDEODRIVER', 'fbcon'                 )
-        os.putenv('SDL_FBDEV'      , '/dev/fb1'              )
-        os.putenv('SDL_MOUSEDRV'   , 'TSLIB'                 )
-        os.putenv('SDL_MOUSEDEV'   , '/dev/input/touchscreen')
-
         odyssey = Odyssey()
         odyssey.cameraController.show_preview()
         odyssey.cameraController.start_recording()
