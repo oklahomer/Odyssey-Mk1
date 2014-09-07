@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import threading
-import pygame
-import time
-import io
 import picamera
+import time
+from PIL import Image, ImageDraw, ImageFont
 
 class PiCamController(threading.Thread):
     def __init__(self, gpsController=None):
@@ -19,73 +18,61 @@ class PiCamController(threading.Thread):
 
         self.gpsController = gpsController
 
-        # initialize pygame
-        pygame.init()
-        pygame.mouse.set_visible(False)
-        self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
-
-        self.rgb = bytearray(
-            camera.resolution[0] * camera.resolution[1] * 3
-            )
-
         # set current statement
-        self.running       = False
-        self.is_previewing = False
+        self.running        = False
+        self.status_overlay = None
 
     def run(self):
         # start running
         self.running = True
         while self.running:
-            if self.is_previewing: self.refresh_preview()
+            if self.camera.previewing: self.refresh_status_overlay()
 
-    def refresh_preview(self):
-        # to store image into in-memory stream
-        stream = io.BytesIO()
-        self.camera.capture(
-            stream, use_video_port=True, format='rgb', resize=(320, 240)
-            )
-        stream.seek(0)
-        stream.readinto(self.rgb)
-        stream.close()
+    def refresh_status_overlay(self):
 
-        # fix displaying image
-        img = pygame.image.frombuffer(
-            self.rgb[0:(320 * 240 * 3)], (320, 240), 'RGB'
-            )
-        self.screen.blit(img, (0, 0))
+        text_array = []
 
-        # display recording status
-        font = pygame.font.SysFont("freeserif", 18, bold = 1)
-        lines = ["Recording : %s" % ('ON' if self.camera.recording else 'OFF')]
+        # add recording status
+        text_array.append('Recording : %s' % ('ON' if self.camera.recording else 'OFF'))
 
-        # display speed if GPS receiver is active
-        speed = self.gpsController.fix.speed if self.gpsController else None
-        if speed:
-            lines.append("Speed : %s Km/h" % (speed * 60 * 60 / 1000))
+        # add driving speed
+        speed = (str(self.gpsController.fix.speed * 60 * 60 / 1000) + 'Km/h'
+                    if self.gpsController and self.gpsController.fix.speed
+                    else 'N/A')
+        text_array.append('Speed : %s' % speed)
+
+        # prepare image to be overlayed
+        img = Image.new('RGB', self.camera.resolution)
+        draw = ImageDraw.Draw(img)
+        draw.font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSerif.ttf", 75)
+
+        top_margin = 5
+        for text in text_array:
+            draw.text((5, top_margin), text, fill=(255, 255, 255))
+            top_margin += draw.font.getsize(text)[1] + 5
+
+        if not self.status_overlay:
+            self.status_overlay = self.camera.add_overlay(
+                img.tostring(), layer=5, size=img.size, alpha=128)
         else:
-            lines.append("Speed : N/A")
-
-        marginX = 10
-        for line in lines:
-            textSurface = font.render(line, 1, pygame.Color(255, 255, 255))
-            self.screen.blit(textSurface, (10, marginX))
-            marginX += (font.get_linesize() + 5)
-
-        # finally update display
-        pygame.display.update()
+            try:
+                self.status_overlay.update(img.tostring())
+            except:
+                pass
 
     def show_preview(self):
-        self.is_previewing = True
+        self.camera.start_preview()
 
     def hide_preview(self):
-        # tell run() NOT to refresh screen any more
-        # and wait till it actually stops
-        self.is_previewing = False
-        time.sleep(0.3)
+        self.camera.stop_preview()
 
-        # then show black screen
-        self.screen.fill((0, 0, 0));
-        pygame.display.update()
+        # wait till all process in refresh_status_overlay() is through
+        # before removing overlay
+        time.sleep(0.2)
+
+        if self.status_overlay:
+            self.camera.remove_overlay(self.status_overlay)
+            self.status_overlay = None
 
     def start_recording(self, fileName='vid.h264'):
         if not self.camera.recording:
@@ -108,12 +95,6 @@ class PiCamController(threading.Thread):
 
 if __name__ == '__main__':
     import sys
-    import os
-
-    os.putenv('SDL_VIDEODRIVER', 'fbcon'                 )
-    os.putenv('SDL_FBDEV'      , '/dev/fb1'              )
-    os.putenv('SDL_MOUSEDRV'   , 'TSLIB'                 )
-    os.putenv('SDL_MOUSEDEV'   , '/dev/input/touchscreen')
 
     try:
         controller = PiCamController()
