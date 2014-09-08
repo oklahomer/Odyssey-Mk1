@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from GPSController import GPSController
 from PiCamController import PiCamController
+from FrameBufferController import FrameBufferController
 import os
 import time
 import sys
@@ -19,8 +20,13 @@ class Odyssey():
             print 'Unexpected error on recording: ', exc_info[0], exc_info[1]
             self.gpsController = None
 
+        # prep camera
         self.cameraController = PiCamController(self.gpsController)
         self.cameraController.start()
+
+        # copy /dev/fb0 to /dev/fb1
+        self.frameBufferController = FrameBufferController()
+        self.frameBufferController.start()
 
     def datetime(self, format='%Y-%m-%dT%H:%M:%S'):
         if self.gpsController and self.gpsController.utc:
@@ -60,6 +66,7 @@ class Odyssey():
                 self.gpsController.start_logging(dirName + '/' + dt + '.csv')
 
     def stop(self):
+        self.frameBufferController.stopController()
         self.cameraController.stopController()
         if self.gpsController:
             self.gpsController.stopController()

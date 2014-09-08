@@ -107,7 +107,7 @@ if __name__ == '__main__':
         controller = PiCamController()
         controller.start()
 
-        print('Displaying...')
+        print 'Displaying...'
         controller.show_preview()
         time.sleep(5)
         controller.hide_preview()
