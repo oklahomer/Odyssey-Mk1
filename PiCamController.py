@@ -43,19 +43,23 @@ class PiCamController(threading.Thread):
         draw = ImageDraw.Draw(img)
         draw.font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSerif.ttf", 75)
 
-        top_margin = 5
+        left_margin  = 5
+        top_margin   = 5
+        line_padding = 5
         for text in text_array:
-            draw.text((5, top_margin), text, fill=(255, 255, 255))
-            top_margin += draw.font.getsize(text)[1] + 5
+            draw.text((left_margin, top_margin), text, fill=(255, 255, 255))
+            top_margin += draw.font.getsize(text)[1] + line_padding
 
-        if not self.status_overlay:
-            self.status_overlay = self.camera.add_overlay(
-                img.tostring(), layer=5, size=img.size, alpha=128)
-        else:
-            try:
+        try:
+            if self.status_overlay:
                 self.status_overlay.update(img.tostring())
-            except:
-                pass
+            else:
+                self.status_overlay = self.camera.add_overlay(
+                    img.tostring(), layer=self.camera.preview.layer+1,
+                    size=img.size, alpha=128)
+
+        except:
+            pass
 
     def show_preview(self):
         self.camera.start_preview()
