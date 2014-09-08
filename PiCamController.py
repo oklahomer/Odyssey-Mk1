@@ -11,7 +11,7 @@ class PiCamController(threading.Thread):
 
         # initialize camera
         camera = picamera.PiCamera()
-        camera.resolution = (1024, 768)
+        camera.resolution = (640, 480)
         camera.rotation   = 180
         camera.crop       = (0.0, 0.0, 1.0, 1.0)
         self.camera       = camera
@@ -41,7 +41,7 @@ class PiCamController(threading.Thread):
         # prepare image to be overlayed
         img = Image.new('RGB', self.camera.resolution)
         draw = ImageDraw.Draw(img)
-        draw.font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSerif.ttf", 75)
+        draw.font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSerif.ttf", 50)
 
         left_margin  = 5
         top_margin   = 5
