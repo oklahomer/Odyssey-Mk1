@@ -36,10 +36,7 @@ class PiCamController(threading.Thread):
         text_array.append('Recording : %s' % ('ON' if self.camera.recording else 'OFF'))
 
         # add driving speed
-        speed = (str(self.gpsController.fix.speed * 60 * 60 / 1000) + 'Km/h'
-                    if self.gpsController and self.gpsController.fix.speed
-                    else 'N/A')
-        text_array.append('Speed : %s' % speed)
+        text_array.append('Speed : %s' % self.speed_status)
 
         # prepare image to be overlayed
         img = Image.new('RGB', self.camera.resolution)
@@ -87,6 +84,13 @@ class PiCamController(threading.Thread):
     @property
     def recording(self):
         return self.camera.recording
+
+    @property
+    def speed_status(self):
+        if not self.gpsController: return 'N/A'
+
+        speed = self.gpsController.fix.speed
+        return str(speed * 60 * 60 / 1000) + 'Km/h' if speed == speed else 'N/A'
 
 if __name__ == '__main__':
     import sys
