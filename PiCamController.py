@@ -62,17 +62,12 @@ class PiCamController(threading.Thread):
 
     def show_preview(self):
         self.camera.start_preview()
+        if self.status_overlay:
+            self.status_overlay.alpha = 128
 
     def hide_preview(self):
+        self.status_overlay.alpha = 0
         self.camera.stop_preview()
-
-        # wait till all process in refresh_status_overlay() is through
-        # before removing overlay
-        time.sleep(0.2)
-
-        if self.status_overlay:
-            self.camera.remove_overlay(self.status_overlay)
-            self.status_overlay = None
 
     def start_recording(self, fileName='vid.h264'):
         if not self.camera.recording:
