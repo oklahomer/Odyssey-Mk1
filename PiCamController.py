@@ -33,7 +33,7 @@ class PiCamController(threading.Thread):
         text_array = []
 
         # add recording status
-        text_array.append('Recording : %s' % ('ON' if self.camera.recording else 'OFF'))
+        text_array.append('Recording : %s' % self.recording_status)
 
         # add driving speed
         text_array.append('Speed : %s' % self.speed_status)
@@ -91,6 +91,10 @@ class PiCamController(threading.Thread):
 
         speed = self.gpsController.fix.speed
         return str(speed * 60 * 60 / 1000) + 'Km/h' if speed == speed else 'N/A'
+
+    @property
+    def recording_status(self):
+        return 'ON' if self.camera.recording else 'OFF'
 
 if __name__ == '__main__':
     import sys
