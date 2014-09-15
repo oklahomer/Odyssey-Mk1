@@ -3,6 +3,7 @@ import threading
 import time
 import subprocess
 import os
+import sys
 
 class GPSController(threading.Thread):
     def __init__(self):
@@ -31,7 +32,26 @@ class GPSController(threading.Thread):
         self.running = True
 
         while self.running:
-            self.gpsd.next()
+            try:
+                self.gpsd.next()
+
+            except StopIteration:
+                sys.stderr.write('self.gpsd.read() failed.\n')
+                continue
+
+            except json_error as error:
+                sys.stderr.write(
+                    'json parse error: %s: %s\n' % (
+                        error.explanation,
+                        error.data))
+                continue
+
+            except:
+                sys.stderr.write(
+                    'Unexpected error: %s: %s\n' % (
+                        sys.exc_info()[0],
+                        sys.exc_info()[1]))
+                continue
 
             if self.is_logging:
                 currentTime = time.time()
@@ -46,8 +66,7 @@ class GPSController(threading.Thread):
         dataString = ','.join([self.utc,
                                str(self.fix.latitude),
                                str(self.fix.longitude),
-                               str(self.fix.speed)]
-                               )
+                               str(self.fix.speed)])
 
         file = open(self.fileName, 'a')
         file.write(dataString + '\n')
@@ -55,6 +74,7 @@ class GPSController(threading.Thread):
 
     def stopController(self):
         self.running = False
+        subprocess.call('pkill gpsd', shell=True)
 
     def start_logging(self, fileName='gps_log.csv'):
         self.fileName   = fileName
@@ -74,8 +94,6 @@ class GPSController(threading.Thread):
         return self.gpsd.utc
 
 if __name__ == '__main__':
-    import sys
-
     gpsController = GPSController()
 
     try:
@@ -98,7 +116,10 @@ if __name__ == '__main__':
         print 'Cancelled'
 
     except:
-        print 'Unexpected error : ', sys.exc_info()[0], sys.exc_info()[1]
+        sys.stderr.write(
+            'Unexpected error: %s: %s\n', (
+                sys.exc_info()[0],
+                sys.exc_info()[1]))
 
     finally:
         gpsController.stopController()
