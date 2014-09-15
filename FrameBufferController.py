@@ -13,11 +13,10 @@ class FrameBufferController(threading.Thread):
         fbcp = subprocess.Popen(self.cmd)
 
         self.running = True
-        while(self.running and fbcp.poll() is None):
-            time.sleep(0.5)
-
-        self.running = False
-        if fbcp.poll() == True: fbcp.kill()
+        while self.running:
+            pass
+        else:
+            fbcp.kill()
 
     def stopController(self):
         self.running = False
